@@ -1,0 +1,1 @@
+lupdate resources.h -ts pa_db_ru.ts

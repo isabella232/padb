@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/pa_db/" >
+      <file>oopt_toolbar_add.png</file>
+      <file>oopt_toolbar_list.png</file>
+      <file>oopt_toolbar_select.png</file>
+      <file>oopt_object_invalid.png</file>
+      <file>oopt_object_invalid_nolinks.png</file>
+      <file>oopt_object_valid.png</file>
+      <file>oopt_element_invalid.png</file>
+      <file>oopt_element_unlinked.png</file>
+      <file>oopt_element_valid.png</file>
+      <file>report_template.doc</file>
+      <file>empty_db.db3</file>
+    </qresource>
+</RCC>
