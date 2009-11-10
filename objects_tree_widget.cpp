@@ -24,7 +24,7 @@ Qt::DropActions pa_db::objects_tree_widget::supportedDropActions( ) const
 
 QStringList pa_db::objects_tree_widget::mimeTypes( ) const
 {
-	return QStringList( ) << pa_db::text::free_element_mime_data( ) << pa_db::text::link_element_mime_data( );
+	return QStringList() << pa_db::text::free_element_mime_data( ) << pa_db::text::link_element_mime_data( ) << "application/x-qt-windows-mime;value=\"species_mime_data\"";
 }
 
 bool pa_db::objects_tree_widget::dropMimeData( QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action )
@@ -40,7 +40,15 @@ void pa_db::objects_tree_widget::mouseMoveEvent( QMouseEvent *event )
 		{
 			QDrag *drag = new QDrag( this );
 			QMimeData *mimeData = new QMimeData;
-			mimeData->setData( pa_db::text::link_element_mime_data( ), currentItem( )->data( 0, Qt::UserRole ).toByteArray( ) );
+			if ( currentItem()->text( 1 ) == "species" )
+			{
+				mimeData->setData( "application/x-qt-windows-mime;value=\"species_mime_data\"", currentItem()->data( 0, Qt::UserRole ).toByteArray() );
+			}
+			else
+			{
+				mimeData->setData( pa_db::text::link_element_mime_data(), currentItem()->data( 0, Qt::UserRole ).toByteArray() );
+			}
+			//mimeData->setData( pa_db::text::link_element_mime_data( ), currentItem( )->data( 0, Qt::UserRole ).toByteArray( ) );
 			drag->setMimeData( mimeData );
 			drag->start( Qt::MoveAction );
 		}

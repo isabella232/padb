@@ -24,11 +24,14 @@
 #include "dock_widget.h"
 #include "resources.h"
 #include "properties_form.h"
-#include "settings_form.h"
 #include "settings.h"
 #include "objects_tree_widget.h"
 #include "free_elements_widget.h"
+#include "species_widget.h"
 #include "select_object_tool.h"
+// #include "qgsspeciesimportdialog.h"
+#include "qgspadbsettingsdialog.h"
+#include "qgsspeciespropertiesdialog.h"
 
 namespace { namespace aux {
 	void test_tool( QgsMapTool *tool, QAction *action, QgsMapTool *action_tool )
@@ -48,11 +51,20 @@ pa_db::pa_manager::pa_manager( QgisInterface *the_interface, QObject *parent )
 	, m_free_elements_cntrl( this )
 	, m_objects_tree( the_interface, this )
 	, m_elements_list( this )
+	, mSpeciesController( this )
+	, mSpeciesList( this )
 {
+	QString myLocale = settings::padbLocale();
 	QTranslator *translator = new QTranslator( this );
-	bool load_tr = translator->load( "pa_db_ru", QgsApplication::i18nPath( ) );
-	Q_ASSERT( load_tr );
-	QCoreApplication::installTranslator( translator );
+	if ( translator->load( QString( "padb_" ) + myLocale, QgsApplication::i18nPath() ) )
+	{
+		QCoreApplication::installTranslator( translator );
+	}
+	
+	// QTranslator *translator = new QTranslator( this );
+	// bool load_tr = translator->load( "padb_ru_RU", QgsApplication::i18nPath( ) );
+	// Q_ASSERT( load_tr );
+	// QCoreApplication::installTranslator( translator );
 
 	QMainWindow *main_window = qobject_cast< QMainWindow*>( m_qgis_iface->mainWindow( ) );
 	Q_ASSERT( main_window );
@@ -61,6 +73,10 @@ pa_db::pa_manager::pa_manager( QgisInterface *the_interface, QObject *parent )
 		dock_widget *dock = new dock_widget( pa_db::text::pa_db_plugin_name_in_dock_widget( ), main_window );
 		m_objects_tree.set_tree_widget( dock->objects_tree( ) );
 		m_free_elements_cntrl.set_list_widget( dock->free_elements_list( ) );
+		mSpeciesList.reload();
+		mSpeciesController.setListWidget( dock->speciesList() );
+		//mSpeciesList.reload();
+		mSpeciesController.render( mSpeciesList );
 		main_window->addDockWidget( Qt::RightDockWidgetArea, dock );
 		m_docker = dock;
 		for ( int nn = 0; nn < m_objects_list.count( ); ++nn )
@@ -75,15 +91,30 @@ pa_db::pa_manager::pa_manager( QgisInterface *the_interface, QObject *parent )
 		qDebug( ) << "invalid pointer to main window";
 	}
 
-	m_settings_action = create_plugin_menu_action( text::settings( ), SLOT( on_show_settings( ) ) );
+	m_settings_action = create_plugin_menu_action( text::settings( ), SLOT( onShowSettings() ) );
 	m_ac_map_all_objs = create_plugin_menu_action( text::map_all_objects( ), SLOT( on_map_all_objects( ) ) );
 	m_ac_map_all_objs->setEnabled( false );
+	// mImportSpeciesAction = create_plugin_menu_action( tr( "Import species" ), SLOT( onImport() ) );
 	m_info_action = create_plugin_menu_action( text::about( ), SLOT( on_about( ) ) );
 //	connect( QgsMapLayerRegistry::instance( ), SIGNAL( layerWillBeRemoved( QString ) ), SLOT( on_change_layers_count( ) ) );
 //	connect( QgsMapLayerRegistry::instance( ), SIGNAL( layerWasAdded( QgsMapLayer* ) ), SLOT( on_change_layers_count( ) ) );
 //	connect( QgsMapLayerRegistry::instance( ), SIGNAL( removedAll( ) ), SLOT( on_change_layers_count( ) ) );
 	connect( m_qgis_iface->mapCanvas( ), SIGNAL( mapToolSet( QgsMapTool* ) ),
 		SLOT( on_map_tool_set( QgsMapTool* ) ) );
+	
+	if ( m_objects_list.is_db_open() )
+	{
+		// set visibility of species widget
+		dock_widget *dw = qobject_cast< dock_widget*> ( m_docker );
+		if ( pa_db::settings::speciesVisibleFlag() == Qt::Checked )
+		{
+			dw->hideSpecies();
+		}
+		else
+		{
+			dw->showSpecies();
+		}
+	}
 }
 
 QPointer< QAction > pa_db::pa_manager::create_plugin_menu_action( const QString &text, const char *sl )
@@ -151,11 +182,42 @@ const pa_db::pa_object* pa_db::pa_manager::create_object( const QString &obj_nam
 	return 0;
 }
 
-void pa_db::pa_manager::on_show_settings( )
+void pa_db::pa_manager::onShowSettings()
 {
-	settings_form form( qgis_iface( )->mainWindow( ) );
-	form.exec( );
+	//settings_form form( qgis_iface( )->mainWindow( ) );
+	//form.exec( );
+	QgsPadbSettingsDialog form( qgis_iface()->mainWindow() );
+	form.exec();
+	
+	mSpeciesList.reload();
+	mSpeciesController.render( mSpeciesList );
+	
+	m_objects_list.load();
+	m_objects_tree.render( m_objects_list );
+	m_objects_tree.update_icons();
+	
+	if ( m_objects_list.is_db_open() )
+	{
+		// set visibility of species widget
+		dock_widget *dw = qobject_cast< dock_widget*> ( m_docker );
+		if ( pa_db::settings::speciesVisibleFlag() == Qt::Checked )
+		{
+			dw->hideSpecies();
+		}
+		else
+		{
+			dw->showSpecies();
+		}
+	}
 }
+
+// void pa_db::pa_manager::onImport()
+// {
+	// QgsSpeciesImportDialog form( qgis_iface()->mainWindow() );
+	// form.exec();
+	// mSpeciesList.reload();
+	// mSpeciesController.render( mSpeciesList );
+// }
 
 void pa_db::pa_manager::show_object_menu( const QPoint &pos, int object_id )
 {
@@ -224,6 +286,37 @@ void pa_db::pa_manager::move_element_from_obj_to_other( const pa_element &el, in
 {
 	move_element_from_obj_to_free( el );
 	move_free_element_to_obj( el, object_id );
+}
+
+//function for species management
+void pa_db::pa_manager::speciesToObject( const pa_species &el, int object_id )
+{
+	m_objects_list.addSpecies( object_id, el );
+	//QMessageBox::warning( m_qgis_iface->mainWindow(), "DEBUG", QString( "in id %1" ).arg( object_id ) );
+	m_objects_tree.addSpecies( object_id, el );
+	update_widget();
+}
+
+void pa_db::pa_manager::speciesFromObject( const pa_species &el )
+{
+	//const int obj_index = m_objects_list.find_object( el );
+	const int obj_index = el.parentId();
+	//QMessageBox::warning( m_qgis_iface->mainWindow(), "DEBUG", QString( " out id %1" ).arg( obj_index ) );
+	if ( obj_index != -1 )
+	{
+		//m_objects_tree.deleteSpecies( m_objects_list.at( obj_index ).id(), el );
+		m_objects_tree.deleteSpecies( obj_index, el ); // obj_index - индекс (id) элемента
+		m_objects_list.deleteSpecies( obj_index, el );
+		//m_objects_list.deleteSpecies( m_objects_list.at( obj_index ).id( ), el );
+		update_widget();
+	}
+}
+
+void pa_db::pa_manager::showSpeciesProperties( const pa_species &el )
+{
+	QgsSpeciesPropertiesDialog form( qgis_iface()->mainWindow(), el );
+	form.exec();
+	//m_elements_list.select( el, zoom );
 }
 
 QgisInterface *pa_db::pa_manager::qgis_iface( ) const
@@ -327,12 +420,12 @@ void pa_db::pa_manager::map_object_data_to_shape( int object_id )
 				const QSqlRecord rec_desc = query.record( );
 				for ( int nn = 0; nn < rec_desc.count( ); ++nn )
 				{
-					if ( settings::is_db_field_mapped( rec_desc.fieldName( nn ) ) )
+					if ( settings::isDbFieldMapped( rec_desc.fieldName( nn ) ) )
 					{
 						const QVariant value = query.value( nn );
 						if ( !value.isNull( ) && value.isValid( ) )
 						{
-							fields[ settings::name_db_field_mapped( rec_desc.fieldName( nn ) ) ] =
+							fields[ settings::nameDbFieldMapped( rec_desc.fieldName( nn ) ) ] =
 								value;
 						}
 					}
@@ -397,8 +490,3 @@ void pa_db::pa_manager::on_map_all_objects( )
 		map_object_data_to_shape( m_objects_list.at( nn ).id( ) );
 	}
 }
-
-
-
-
-

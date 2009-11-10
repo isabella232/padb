@@ -79,7 +79,7 @@ void pa_db::map_pa_elements_list::load_free_elements( )
 		QgsMapLayer* lay = it_layer.value( );
 		if ( QgsVectorLayer *cur_layrer = qobject_cast< QgsVectorLayer* >( it_layer.value( ) ) )
 		{
-			if ( cur_layrer->name( ) == settings::name_export_layer( ) )
+			if ( cur_layrer->name( ) == settings::ooptLayer( ) )
 			{
 				found = true;
 				if ( QgsVectorDataProvider *data_provider = cur_layrer->dataProvider( ) )

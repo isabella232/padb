@@ -8,6 +8,8 @@
 #include "resources.h"
 #include "pa_object.h"
 #include "pa_manager.h"
+//#include "pa_species.h"
+//#include <QMessageBox>
 
 namespace { namespace aux {
 	const int working_column = 0;
@@ -26,13 +28,14 @@ void pa_db::objects_tree_controller::add_object( const pa_object &object )
 	obj_item->setText( aux::working_column, object.name( ) );
 	obj_item->setData( aux::working_column, Qt::UserRole, object.id( ) );
 	m_view->addTopLevelItem( obj_item );
- 	QVector< pa_element > el = object.elements( );
- 	if ( el.count( ) == 0 )
- 	{
- 		obj_item->setIcon( aux::working_column, QPixmap( pa_db::icon::oopt_object_invalid_nolinks ) );
- 	}
- 	else
- 	{
+	
+	QVector< pa_element > el = object.elements( );
+	if ( el.count( ) == 0 )
+	{
+		obj_item->setIcon( aux::working_column, QPixmap( pa_db::icon::oopt_object_invalid_nolinks ) );
+	}
+	else
+	{
 		bool all_is_valid = true;
 		for ( int nn = 0; nn < el.count( ); ++nn )
 		{
@@ -41,7 +44,19 @@ void pa_db::objects_tree_controller::add_object( const pa_object &object )
 		}
 		obj_item->setIcon( aux::working_column,
 			QPixmap( all_is_valid ? pa_db::icon::oopt_object_valid : pa_db::icon::oopt_object_invalid ) );
- 	}
+	}
+	
+	// create childs from species
+	QVector< pa_species > sp = object.species();
+	if ( sp.count() != 0 )
+	{
+		//QMessageBox::warning( 0, "DEBUG", QString("Species %1").arg( sp.count() ) );
+		for ( int i = 0; i < sp.count(); ++i )
+		{
+			addSpecies( object.id(), sp.at( i ) );
+		}
+	}
+	
 	if ( m_view->topLevelItemCount( ) == 1 )
 		m_view->setCurrentItem( obj_item, aux::working_column, QItemSelectionModel::SelectCurrent );
 }
@@ -92,6 +107,15 @@ bool pa_db::objects_tree_controller::drop_element( QTreeWidgetItem *parent, cons
 			const pa_element moved_el = pa_element::from_byte_array( data->data( pa_db::text::link_element_mime_data( ) ) );
 			m_manager->move_element_from_obj_to_other( moved_el, object_item->data( aux::working_column, Qt::UserRole ).toInt( ) );
 		}
+		// drop species element
+		if (data->hasFormat( "application/x-qt-windows-mime;value=\"species_mime_data\"" ) )
+		{
+			pa_species tempEl = pa_species::fromByteArray( data->data( "application/x-qt-windows-mime;value=\"species_mime_data\"" ) );
+			tempEl.setParentId( object_item->data( aux::working_column, Qt::UserRole ).toInt() );
+			const pa_species copiedEl = tempEl;
+			//const pa_species copiedEl = pa_species::fromByteArray( data->data( "application/x-qt-windows-mime;value=\"species_mime_data\"" ) );
+			m_manager->speciesToObject( copiedEl, object_item->data( aux::working_column, Qt::UserRole ).toInt() );
+		}
 	}
 	else
 	{
@@ -121,6 +145,53 @@ void pa_db::objects_tree_controller::add_element( int object_id, const pa_db::pa
 	}
 }
 
+// for addiing species
+void pa_db::objects_tree_controller::addSpecies( int objectId, const pa_species &el )
+{
+	const int index = find_object( objectId );
+	Q_ASSERT( index != -1 );
+	if ( index != -1 )
+	{
+		QTreeWidgetItem *el_item = new QTreeWidgetItem;
+		// el_item->setText( aux::working_column, el.nameRu() );
+		el_item->setText( aux::working_column, el.caption() );
+		el_item->setText( 1, "species" );
+		el_item->setData( aux::working_column, Qt::UserRole, el.toByteArray() );
+		el_item->setIcon( aux::working_column, QPixmap( pa_db::icon::oopt_species ) );
+		m_view->topLevelItem( index )->addChild( el_item );
+	}
+}
+
+// for deleting species
+void pa_db::objects_tree_controller::deleteSpecies( int objectId, const pa_species &el )
+{
+	const int index = find_object( objectId );
+	//const int index = el.parentId();
+	if ( index != -1 )
+	{
+		QTreeWidgetItem *obj_item = m_view->topLevelItem( index );
+		if ( const int child_count = obj_item->childCount( ) )
+		{
+			for ( int nn = 0; nn < child_count; ++nn )
+			{
+				QTreeWidgetItem *child = obj_item->child( nn );
+				// obj_item->removeChild( child );
+				// return;
+				if( child->text( 1 ) != "species" )
+				{
+					continue;
+				}
+				const pa_species childEl = pa_species::fromByteArray( child->data( aux::working_column, Qt::UserRole ).toByteArray() );
+				if ( el.id() == childEl.id() )
+				{
+					obj_item->removeChild( child );
+					return;
+				}
+			}
+		}
+	}
+}
+
 int pa_db::objects_tree_controller::find_object( int object_id ) const
 {
 	const int count = m_view->topLevelItemCount( );
@@ -142,7 +213,14 @@ void pa_db::objects_tree_controller::update_icons( )
 			for ( int mm = 0; mm < child_count; ++mm )
 			{
 				QTreeWidgetItem *child = obj_item->child( mm );
+				
+				if( child->text( 1 ) == "species" )
+				{
+					continue;
+				}
+				
 				const pa_element el = pa_element::from_byte_array( child->data( aux::working_column, Qt::UserRole ).toByteArray( ) );
+				
 				if ( m_manager->is_element_valid( el ) )
 				{
 					child->setIcon( aux::working_column, QPixmap( pa_db::icon::oopt_element_valid ) );
@@ -204,8 +282,19 @@ void pa_db::objects_tree_controller::on_double_click( )
 {
 	if ( m_view->currentItem( ) && m_view->currentItem( )->parent( ) )
 	{
-		const pa_element cur_el = pa_element::from_byte_array( m_view->currentItem( )->data( aux::working_column, Qt::UserRole ).toByteArray( ) );
-		m_manager->select( cur_el );
+		// TODO: show species properties
+		if ( m_view->currentItem()->text( 1 ) == "species" )
+		{
+			const pa_species sp = pa_species::fromByteArray( m_view->currentItem()->data( aux::working_column, Qt::UserRole ).toByteArray() );
+			m_manager->showSpeciesProperties( sp );
+		}
+		else
+		{
+			const pa_element cur_el = pa_element::from_byte_array( m_view->currentItem( )->data( aux::working_column, Qt::UserRole ).toByteArray( ) );
+			m_manager->select( cur_el );
+		}
+		// const pa_element cur_el = pa_element::from_byte_array( m_view->currentItem( )->data( aux::working_column, Qt::UserRole ).toByteArray( ) );
+		// m_manager->select( cur_el );
 	}
 	else
 	{
@@ -220,3 +309,22 @@ void pa_db::objects_tree_controller::update_object_name( int object_id, const QS
 		m_view->topLevelItem( index )->setText( aux::working_column, name );
 }
 
+void pa_db::objects_tree_controller::render( const pa_object_list &objects )
+{
+  if ( m_view )
+  {
+    m_view->clear();
+    for ( int i = 0; i < objects.count(); ++i )
+    {
+       add_object( objects.at( i ) );
+       
+      // QListWidgetItem *item = new QListWidgetItem;
+      // item->setData( Qt::UserRole, elements[ i ].toByteArray() );
+      // //QString text = elements[ nn ].feature_type( );
+      // item->setText( elements[ i ].caption() );
+      // // item->setText( elements[ i ].nameRu() );
+      // item->setIcon( QPixmap( pa_db::icon::oopt_species ) );
+      // mView->addItem( item );
+    }
+  }
+}

@@ -7,17 +7,20 @@ namespace pa_db
 		inline QString map_all_objects( )			{ return QObject::tr( "Dump from the database to shapefile" ); }
 		inline QString message_no_layer( )			{ return QObject::tr( "Objects layer does not exist in the list. Please check Modules\\PADB\\Settings\\Objects layer" ); }
 		inline QString exp_layer( )					{ return QObject::tr( "Objects layer" ); }
-		inline QString field1( )					{ return QObject::tr( "DB" ); }
-		inline QString field2( )					{ return QObject::tr( "Shapefile" ); }
-		inline QString db_mapping_comment( )		{ return QObject::tr( "Select fields in the database and matching fields in the shapefile" ); }
-		inline QString locate_db_file( )			{ return QObject::tr( "Locate existing or enter new filename for DB including path" ); }
+		//inline QString field1( )					{ return QObject::tr( "DB" ); }
+		//inline QString field2( )					{ return QObject::tr( "Shapefile" ); }
+		//inline QString db_mapping_comment( )		{ return QObject::tr( "Select fields in the database and matching fields in the shapefile" ); }
+		//inline QString locate_db_file( )			{ return QObject::tr( "Locate existing or enter new filename for DB including path" ); }
 		inline QString mapping( )					{ return QObject::tr( "Mapping" ); }
-		inline QString db_mapping( )				{ return QObject::tr( "Field mapping:" ); }
-		inline QString min_zoom( )					{ return QObject::tr( "Max zoom:" ); }
-		inline QString error_create_empty_db( )		{ return QObject::tr( "Error creating empty DB" ); }
+		//inline QString db_mapping( )				{ return QObject::tr( "Field mapping:" ); }
+		//inline QString min_zoom( )					{ return QObject::tr( "Max zoom:" ); }
+		//inline QString error_create_empty_db( )		{ return QObject::tr( "Error creating empty DB" ); }
 		inline QString error_open_db( )				{ return QObject::tr( "Error opening DB.\nIf this is the first time you open PADB,\nplease go to Modules\\PADB\\Settings\nand locate existing or create new DB.\nYou'll need to restart QGIS or PADB\nfor changes to take effect." ); }
-		inline QString group_box_db( )				{ return QObject::tr( "DB Location" ); }
-		inline QString group_box_zoom( )			{ return QObject::tr( "Printout zoom" ); }
+		//inline QString sys_locale( )				{ return QObject::tr( "Override plugin language" ); }
+		//inline QString qgis_locale( )				{ return QObject::tr( "Override plugin language" ); }
+		//inline QString plugin_locale( )				{ return QObject::tr( "Override plugin language" ); }
+		//inline QString group_box_db( )				{ return QObject::tr( "DB Location" ); }
+		//inline QString group_box_zoom( )			{ return QObject::tr( "Printout zoom" ); }
 		inline QString about( )						{ return QObject::tr( "About" ); }
 		inline QString add( )						{ return QObject::tr( "Add" ); }
 		inline QString apply( )						{ return QObject::tr( "Apply" ); }
@@ -29,12 +32,13 @@ namespace pa_db
 		inline QString date( )						{ return QObject::tr( "Date:" ); }
 		inline QString developers( )				{ return QObject::tr( "Developers:" ); }
 		inline QString db_file_name( )				{ return "pa_db_data.db3"; }
-		inline QString db_file( )					{ return QObject::tr( "DB file:" ); }
+		//inline QString db_file( )					{ return QObject::tr( "DB file:" ); }
 		inline QString delete_object( )				{ return QObject::tr( "Delete" ); }
 		inline QString description( )				{ return QObject::tr( "Interface to work with protected areas." ); }
 		inline QString entity_number( )				{ return QObject::tr( "Entity number:" ); }
 		inline QString free_element_mime_data( )	{ return "application/x-qt-windows-mime;value=\"free_element_mime_data\""; }
 		inline QString free_elements_list( )		{ return QObject::tr( "Unlinked elements" ); }
+		//inline QString types_list( )				{ return QObject::tr( "Element types" ); }
 		inline QString input_new_object_name( )		{ return QObject::tr( "New object name" ); }
 		inline QString kod_okato( )					{ return QObject::tr( "OCATO code:" ); }
 		inline QString layer_filter_name( )			{ return "oopt-poly"; }
@@ -44,8 +48,8 @@ namespace pa_db
 		inline QString link( )						{ return QObject::tr( "More info:" ); }
 		inline QString objects_list( )				{ return QObject::tr( "Objects" ); }
 		inline QString ok( )						{ return QObject::tr( "OK" ); }
-		inline QString open_file( )					{ return QObject::tr( "Open file" ); }
-		inline QString open_file_filter( )			{ return QObject::tr( "DB files (*.db3 *.db);;All files (*.*)" ); }
+		//inline QString open_file( )					{ return QObject::tr( "Open file" ); }
+		//inline QString open_file_filter( )			{ return QObject::tr( "DB files (*.db3 *.db);;All files (*.*)" ); }
 		inline QString pa_db_plugin_name( )			{ return QObject::tr( "PADB" ); }
 		inline QString pa_db_plugin_name_in_dock_widget( )		{ return QObject::tr( "Manage" ); }
 		inline QString pa_db_plugin_name_in_tool_bar( )			{ return "PADB"; }
@@ -61,14 +65,14 @@ namespace pa_db
 		inline QString properties( )				{ return QObject::tr( "Properties" ); }
 		inline QString properties_name( )			{ return QObject::tr( "Name:" ); }
 		inline QString question_delete_object( )	{ return QObject::tr( "Delete object %1?" ); }
-		inline QString question_create_empty_db( )	{ return QObject::tr( "DB file does not exist, create empty db?" ); }
+		//inline QString question_create_empty_db( )	{ return QObject::tr( "DB file does not exist, create empty db?" ); }
 		inline QString remove( )					{ return QObject::tr( "Remove" ); }
 		inline QString select( )					{ return QObject::tr( "Select" ); }
 		inline QString select_and_zoom( )			{ return QObject::tr( "Select and zoom to" ); }
 		inline QString settings( )					{ return QObject::tr( "Settings" ); }
 		inline QString status( )					{ return QObject::tr( "Status:" ); }
 		inline QString url( )						{ return QObject::tr( "URL:" ); }
-		inline QString version( )					{ return QObject::tr( "Version: 0.1" ); }
+		inline QString version( )					{ return QObject::tr( "Version: 0.2.8" ); }
 		inline QString file_description( )			{ return QObject::tr( "Description:" ); }
 		inline QString open( )						{ return QObject::tr( "Open" ); }
 		inline QString cannot_open_file( )			{ return QObject::tr( "Cannot open file" ); }
@@ -129,6 +133,7 @@ namespace pa_db
 		static const QString oopt_element_invalid		( ":/pa_db/oopt_element_invalid.png" );
 		static const QString oopt_element_unlinked		( ":/pa_db/oopt_element_unlinked.png" );
 		static const QString oopt_element_valid			( ":/pa_db/oopt_element_valid.png" );
+		static const QString oopt_species			( ":/pa_db/tag_blue.png" );
 
 	}
 	namespace def

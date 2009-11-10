@@ -1,0 +1,1 @@
+lupdate pa_db_plugin.pro

@@ -1,4 +1,3 @@
-
 ########################################################
 # Files
 
@@ -11,6 +10,7 @@ SET (pa_db_SRCS
      objects_tree_widget.cpp
      pa_db_plugin.cpp
      pa_element.cpp
+     pa_species.cpp
      pa_manager.cpp
      pa_object.cpp
      pa_object_list.cpp
@@ -29,11 +29,24 @@ SET (pa_db_SRCS
      utils.cpp
      properties_page_obj_table.cpp
      select_object_tool.cpp
-     settings_form.cpp
+     # settings_form.cpp
      settings.cpp
+     # qgsspeciesimportdialog.cpp
+     qgspadbsettingsdialog.cpp
+     qgsimportspeciesdialog.cpp
+     qgseditspeciesdialog.cpp
+     qgsspeciespropertiesdialog.cpp
+     species_widget.cpp
+     pa_species_list.cpp
+     species_controller.cpp
 )
 
-#SET (pa_db_UIS pa_dbguibase.ui)
+SET (pa_db_UIS
+     # qgsspeciesimportbase.ui
+     qgssettingsbase.ui
+     qgsimportspeciesbase.ui
+     qgseditspeciesbase.ui
+     qgsspeciespropertiesbase.ui)
 
 SET (pa_db_MOC_HDRS
      dock_widget.h
@@ -57,16 +70,22 @@ SET (pa_db_MOC_HDRS
      sql_relation_combo.h
      properties_page_obj_table.h
      select_object_tool.h
-     settings_form.h
+     # settings_form.h
      settings.h
+     # qgsspeciesimportdialog.h
+     qgspadbsettingsdialog.h
+     qgsimportspeciesdialog.h
+     qgseditspeciesdialog.h
+     qgsspeciespropertiesdialog.h
+     species_widget.h
+     species_controller.h
 )
 
 SET (pa_db_RCCS  pa_db_plugin.qrc)
 
 ########################################################
 # Build
-
-QT4_WRAP_UI (pa_db_UIS_H  ${pa_db_UIS})
+QT4_WRAP_UI (pa_db_UIS_H  ${pa_db_UIS}) 
 
 QT4_WRAP_CPP (pa_db_MOC_SRCS  ${pa_db_MOC_HDRS})
 
@@ -78,9 +97,7 @@ INCLUDE_DIRECTORIES(
      ${CMAKE_CURRENT_BINARY_DIR}
      ../../core ../../core/raster ../../core/renderer ../../core/symbology
      ../../gui
-	${CMAKE_CURRENT_BINARY_DIR}/../../ui
      ..
-     ${GEOS_INCLUDE_DIR}
 )
 
 TARGET_LINK_LIBRARIES(pa_dbplugin

@@ -205,10 +205,10 @@ QString pa_db::properties_form::image_replace_text( )
 	{
 		m_manager->select( m_object_id, true );
 		const double current_scale = m_manager->qgis_iface( )->mapCanvas( )->mapRenderer( )->scale( );
-		if ( current_scale < settings::min_zoom( ).toInt( ) )
+		if ( current_scale < settings::zoom() )
 		{
 			QgsRectangle scale_rect = m_manager->qgis_iface( )->mapCanvas( )->extent( );
-			scale_rect.scale( double( settings::min_zoom( ).toInt( ) ) / current_scale );
+			scale_rect.scale( double( settings::zoom() ) / current_scale );
 			m_manager->qgis_iface( )->mapCanvas( )->setExtent( scale_rect );
 			m_manager->qgis_iface( )->mapCanvas( )->updateFullExtent( );
 		}

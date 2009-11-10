@@ -1,108 +1,190 @@
-#include "settings.h"
-#include <QSettings>
-#include <QDesktopServices>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#include <QDir>
+#include <QSettings>
+#include <QDesktopServices>
+
+#include "settings.h"
 #include "resources.h"
 
-namespace { namespace aux {
-	const QString key_db_file_name( "key_db_file_name" );
-	const QString key_min_zoom( "key_min_zoom" );
-	const QString key_export_layer( "export_layer" );
-	const QString key_group_is_mapping( "group_is_mapping" );
-	const QString key_group_name_mapping( "group_name_mapping" );
-} }
-
-QString pa_db::settings::db_file_name( )
+namespace
 {
-	return QSettings( ).value( aux::key_db_file_name,
-		QDesktopServices::storageLocation( QDesktopServices::DataLocation ) + "/" + text::db_file_name( ) ).toString( );
+  namespace aux
+  {
+    const QString keyDbFileName( "padb/db_file_name" );
+    const QString keyZoom( "padb/min_zoom" );
+    const QString keyPadbLocale( "padb/user_locale" );
+    const QString keyPadbOverrideFlag( "padb/override_locale" );
+    const QString keyQgisLocale( "locale/userLocale" );
+    const QString keyLayer( "padb/export_layer" );
+    const QString groupIsMapping( "padb/group_is_mapping" );
+    const QString groupNameMapping( "padb/group_name_mapping" );
+  }
 }
 
-void pa_db::settings::set_db_file_name( const QString &file_name )
+QString pa_db::settings::qgisLocale()
 {
-	QSettings( ).setValue( aux::key_db_file_name, file_name );
+	return QSettings().value( aux::keyQgisLocale, "en_US" ).toString();
 }
 
-bool pa_db::settings::create_empy_db_file( const QString &file_name )
+QString pa_db::settings::padbLocale()
 {
-	QFile fl_in( ":/pa_db/empty_db.db3" );
-	if ( fl_in.open( QIODevice::ReadOnly ) )
+	bool padbOverrideFlag = QSettings().value( aux::keyPadbOverrideFlag, false ).toBool();
+	if ( padbOverrideFlag ) // override QGIS locale
 	{
-		QFileInfo info( file_name );
-		if ( !QDir( ).exists( info.absolutePath( ) ) )
-			QDir( ).mkpath( info.absolutePath( ) );
-		QFile fl_out( file_name );
-		if ( fl_out.open( QIODevice::WriteOnly ) )
+		return QSettings().value( aux::keyPadbLocale, "en_US" ).toString();
+	}
+	else // use QGIS locale
+	{
+		return QSettings().value( aux::keyQgisLocale, "en_US" ).toString();
+	}
+}
+
+void pa_db::settings::setPadbLocale( const QString &locale )
+{
+	QSettings().setValue( aux::keyPadbLocale, locale );
+}
+
+bool pa_db::settings::padbOverrideFlag()
+{
+	return QSettings().value( aux::keyPadbOverrideFlag, false ).toBool();
+}
+
+void pa_db::settings::setPadbOverrideFlag( bool flag )
+{
+	QSettings().setValue( aux::keyPadbOverrideFlag, flag );
+}
+
+QString pa_db::settings::dbFileName()
+{
+	return QSettings().value( aux::keyDbFileName,
+		QDesktopServices::storageLocation( QDesktopServices::DataLocation ) + "/" + text::db_file_name() ).toString();
+}
+
+void pa_db::settings::setDbFileName( const QString &fileName )
+{
+	QSettings().setValue( aux::keyDbFileName, fileName );
+}
+
+bool pa_db::settings::createEmptyDb( const QString &fileName )
+{
+	QFile fileIn( ":/pa_db/empty_db.db3" );
+	if ( fileIn.open( QIODevice::ReadOnly ) )
+	{
+		QFileInfo info( fileName );
+		if ( !QDir().exists( info.absolutePath() ) )
+			QDir().mkpath( info.absolutePath() );
+		QFile fileOut( fileName );
+		if ( fileOut.open( QIODevice::WriteOnly ) )
 		{
-			fl_out.write( fl_in.readAll( ) );
+			fileOut.write( fileIn.readAll() );
 			return true;
 		}
 	}
 	return false;
 }
 
-QString pa_db::settings::min_zoom( )
+int pa_db::settings::zoom()
 {
-	int result = QSettings( ).value( aux::key_min_zoom, "25000" ).toInt( );
+	int result = QSettings().value( aux::keyZoom, "25000" ).toInt();
 	if ( result < 5000 || result > 1000000)
 		result = 25000;
-	return QString::number( result );
+	//return QString::number( result );
+	return result;
 }
 
-void pa_db::settings::set_min_zoom( const QString &value )
+void pa_db::settings::setZoom( const QString &zoom )
 {
-	QSettings( ).setValue( aux::key_min_zoom, value );
+	QSettings().setValue( aux::keyZoom, zoom );
 }
 
-bool pa_db::settings::is_db_field_mapped( const QString &db_field_name )
+QString pa_db::settings::ooptLayer()
 {
-	if ( !db_field_name.isEmpty( ) )
+	return QSettings().value( aux::keyLayer, "" ).toString();
+}
+
+void pa_db::settings::setOoptLayer( const QString &layer )
+{
+	QSettings().setValue( aux::keyLayer, layer );
+}
+
+bool pa_db::settings::isDbFieldMapped( const QString &dbFieldName )
+{
+	if ( !dbFieldName.isEmpty() )
 	{
 		QSettings set;
-		set.beginGroup( aux::key_group_is_mapping );
-		return set.value( db_field_name, true ).toBool( );
+		set.beginGroup( aux::groupIsMapping );
+		return set.value( dbFieldName, true ).toBool();
 	}
 	return false;
 }
 
-void pa_db::settings::set_db_field_mapped( const QString &db_field_name, bool mapped )
+void pa_db::settings::setDbFieldMapped( const QString &dbFieldName, bool mapped )
 {
-	if ( !db_field_name.isEmpty( ) )
+	if ( !dbFieldName.isEmpty() )
 	{
 		QSettings set;
-		set.beginGroup( aux::key_group_is_mapping );
-		set.setValue( db_field_name, mapped );
+		set.beginGroup( aux::groupIsMapping );
+		set.setValue( dbFieldName, mapped );
 	}
 }
 
-QString pa_db::settings::name_db_field_mapped( const QString &db_field_name )
+QString pa_db::settings::nameDbFieldMapped( const QString &dbFieldName )
 {
-	if ( !db_field_name.isEmpty( ) )
+	if ( !dbFieldName.isEmpty() )
 	{
 		QSettings set;
-		set.beginGroup( aux::key_group_name_mapping );
-		return set.value( db_field_name, "" ).toString( );
+		set.beginGroup( aux::groupNameMapping );
+		return set.value( dbFieldName, "" ).toString();
 	}
 	return "";
 }
-void pa_db::settings::set_name_db_field_mapped( const QString &db_field_name, const QString &mapped_name )
+void pa_db::settings::setNameDbFieldMapped( const QString &dbFieldName, const QString &mappedName )
 {
-	if ( !db_field_name.isEmpty( ) && !mapped_name.isEmpty( ) )
+	if ( !dbFieldName.isEmpty() && !mappedName.isEmpty() )
 	{
 		QSettings set;
-		set.beginGroup( aux::key_group_name_mapping );
-		set.setValue( db_field_name, mapped_name );
+		set.beginGroup( aux::groupNameMapping );
+		set.setValue( dbFieldName, mappedName );
 	}
 }
 
-QString pa_db::settings::name_export_layer( )
+int pa_db::settings::speciesVisibleFlag()
 {
-	return QSettings( ).value( aux::key_export_layer, "" ).toString( );
+	return QSettings().value( "padb/speciesVisible", 0 ).toInt();
 }
 
-void pa_db::settings::set_name_export_layer( const QString &name )
+void pa_db::settings::setSpeciesVisibleFlag( int state )
 {
-	QSettings( ).setValue( aux::key_export_layer, name );
+	QSettings().setValue( "padb/speciesVisible", state );
+}
+
+int pa_db::settings::fieldSeparator()
+{
+	return QSettings().value( "padb/fieldSeparator", 0 ).toInt();
+}
+
+void pa_db::settings::setFieldSeparator( int sep )
+{
+	QSettings().setValue( "padb/fieldSeparator", sep );
+}
+
+QString pa_db::settings::userSeparator()
+{
+	return QSettings().value( "padb/customSeparator", "" ).toString();
+}
+
+void pa_db::settings::setUserSeparator( const QString &sep )
+{
+	QSettings().setValue( "padb/customSeparator", sep );
+}
+
+int pa_db::settings::namingStyle()
+{
+	return QSettings().value( "padb/namingStyle", "0" ).toInt();
+}
+
+void pa_db::settings::setNamingStyle( int style )
+{
+	QSettings().setValue( "padb/namingStyle", style );
 }

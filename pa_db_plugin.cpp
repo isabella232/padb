@@ -24,6 +24,8 @@ void pa_db::pa_db_plugin::initGui( )
 
 void pa_db::pa_db_plugin::unload( )
 {
+	
+	
 	if ( m_manager )
 		delete m_manager;
 }
@@ -32,22 +34,27 @@ QGISEXTERN QgisPlugin *classFactory( QgisInterface *theQgisInterfacePointer )
 {
 	return new pa_db::pa_db_plugin( theQgisInterfacePointer );
 }
+
 QGISEXTERN QString name( )
 {
 	return pa_db::text::pa_db_plugin_name_in_plugin_manager( ) + "(" + sPluginVersion + ")";
 }
+
 QGISEXTERN QString description( )
 {
   return sDescription;
 }
+
 QGISEXTERN int type( )
 {
   return sPluginType;
 }
+
 QGISEXTERN QString version( )
 {
   return sPluginVersion;
 }
+
 QGISEXTERN void unload( QgisPlugin * thePluginPointer )
 {
   delete thePluginPointer;

@@ -41,5 +41,12 @@ void pa_db::pa_object::set_elements( const QVector< pa_db::pa_element >& list )
 	m_elements = list;
 }
 
+QVector< pa_db::pa_species > pa_db::pa_object::species() const
+{
+	return mSpecies;
+}
 
-
+void pa_db::pa_object::setSpecies( const QVector< pa_species >& list )
+{
+	mSpecies = list;
+}
