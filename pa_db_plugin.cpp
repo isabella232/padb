@@ -37,7 +37,7 @@ QGISEXTERN QgisPlugin *classFactory( QgisInterface *theQgisInterfacePointer )
 
 QGISEXTERN QString name( )
 {
-	return pa_db::text::pa_db_plugin_name_in_plugin_manager( ) + "(" + sPluginVersion + ")";
+	return pa_db::text::pa_db_plugin_name_in_plugin_manager( ) + " (" + sPluginVersion + ")";
 }
 
 QGISEXTERN QString description( )

@@ -7,6 +7,7 @@
 !define PRODUCT_WEB_SITE "http://gis-lab.info/"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+!define SOURCE_DIR "D:\padb"
 
 SetCompressor lzma
 
@@ -40,17 +41,17 @@ SetCompressor lzma
 
 Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 OutFile "setup.exe"
-InstallDir "C:\Program Files\Quantum GIS\" ;$PROGRAMFILES"
+InstallDir "C:\OSGeo4W\apps\qgis-dev\plugins"
 ShowInstDetails show
 ShowUnInstDetails show
 
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR\i18n"
   SetOverwrite on
-  File "C:\OSGeo4W\qgis_src\src\plugins\pa_db_plugin\pa_db_ru.qm"
+  File "${SOURCE_DIR}\padb_ru_RU.qm"
   SetOutPath "$INSTDIR\plugins"
   SetOverwrite on
-  File "C:\OSGeo4W\apps\Копия qgis\plugins\pa_dbplugin.dll"
+  File "${SOURCE_DIR}\pa_dbplugin.dll"
 SectionEnd
 
 Function .onInit

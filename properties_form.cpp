@@ -7,7 +7,7 @@
 #include "properties_page_importance.h"
 #include "properties_page_subjection.h"
 #include "properties_page_activity.h"
-#include "qgsprojectionselector.h"
+//#include "qgsprojectionselector.h"
 #include "resources.h"
 #include "pa_manager.h"
 #include "qgisinterface.h"
@@ -229,12 +229,13 @@ QString pa_db::properties_form::image_replace_text( )
 
 QString pa_db::properties_form::projection_replace_text( )
 {
-	QgsProjectionSelector selector( this );
-	long myCRSID = m_manager->qgis_iface( )->mapCanvas( )->mapRenderer( )->destinationSrs( ).srsid( );
-	selector.setSelectedCrsId( myCRSID );
-	selector.setMaximumSize( 1, 1 );
-	selector.show( );
-	const QString result = selector.selectedProj4String( );
-	selector.hide( );
-	return result;
+//	QgsProjectionSelector selector( this );
+//	long myCRSID = m_manager->qgis_iface( )->mapCanvas( )->mapRenderer( )->destinationSrs( ).srsid( );
+//	selector.setSelectedCrsId( myCRSID );
+//	selector.setMaximumSize( 1, 1 );
+//	selector.show( );
+//	const QString result = selector.selectedProj4String( );
+//	selector.hide( );
+//	return result;
+        return QString( "" );
 }
